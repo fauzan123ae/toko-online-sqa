@@ -19,3 +19,4 @@ class CatalogTest extends TestCase{
 
     protected function tearDown(): void{ unlink($this->testFile); }
 }
+#
