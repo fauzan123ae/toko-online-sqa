@@ -9,15 +9,16 @@ use Facebook\WebDriver\WebDriverBy;
 class SystemTest extends TestCase
 {
     private $driver;
-
     private $baseUrl = 'http://localhost:8000';
 
     protected function setUp(): void
     {
-        $host = 'http://localhost:9515';
+        // Mengarahkan ke ChromeDriver lokal
+        $host = 'http://localhost:9515/wd/hub';
 
         $chromeOptions = new ChromeOptions();
 
+        // Mode headless untuk Linux / GitHub Actions
         $chromeOptions->addArguments([
             '--headless',
             '--disable-gpu',
@@ -25,22 +26,20 @@ class SystemTest extends TestCase
         ]);
 
         $capabilities = DesiredCapabilities::chrome();
-
         $capabilities->setCapability(
             ChromeOptions::CAPABILITY,
             $chromeOptions
         );
 
-        $this->driver = RemoteWebDriver::create(
-            $host,
-            $capabilities
-        );
+        $this->driver = RemoteWebDriver::create($host, $capabilities);
     }
 
     public function testHomepageAndSearchFeature()
     {
+        // Kunjungi website lokal
         $this->driver->get($this->baseUrl);
 
+        // Validasi halaman memuat teks utama
         $bodyText = $this->driver
             ->findElement(WebDriverBy::tagName('body'))
             ->getText();
@@ -50,17 +49,24 @@ class SystemTest extends TestCase
             $bodyText
         );
 
+        // Cari produk
         $searchBox = $this->driver
             ->findElement(WebDriverBy::name('cari'));
 
         $searchBox->sendKeys('Kemeja');
 
+        // Submit form pencarian
         $searchBox->submit();
 
+        // Tunggu halaman reload
+        sleep(2);
+
+        // Ambil ulang isi halaman
         $updatedBodyText = $this->driver
             ->findElement(WebDriverBy::tagName('body'))
             ->getText();
 
+        // Validasi hasil pencarian muncul
         $this->assertStringContainsString(
             'Kemeja Flanel',
             $updatedBodyText
@@ -74,3 +80,4 @@ class SystemTest extends TestCase
         }
     }
 }
+#
